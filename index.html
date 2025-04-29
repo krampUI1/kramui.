@@ -3,118 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - RO-EXEC</title>
-  <script type="module">
-    // Firebase setup
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const loginForm = document.getElementById("loginForm");
-
-      loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = loginForm.email.value;
-        const password = loginForm.password.value;
-        const userKey = loginForm.key.value;
-
-        try {
-          // Authenticate user
-          await signInWithEmailAndPassword(auth, email, password);
-
-          // Validate key
-          const keysRef = collection(db, "keys");
-          const q = query(keysRef, where("value", "==", userKey), where("enabled", "==", true));
-          const querySnapshot = await getDocs(q);
-
-          if (!querySnapshot.empty) {
-            window.location.href = "ro-exec.html";
-          } else {
-            alert("Invalid or disabled key.");
-          }
-        } catch (err) {
-          alert("Login or key failed: " + err.message);
-        }
-      });
-    });
-  </script>
+  <title>Login to use RO-EXEC</title>
   <style>
     body {
-      background: #0f0f10;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f0f10;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
 
-    .login-container {
-      background: #1a1a1d;
-      padding: 2rem;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 0 10px #000;
+    .login-box {
+      background-color: #1a1a1d;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
       text-align: center;
+      width: 300px;
     }
 
-    h1 {
-      margin-bottom: 1.5rem;
+    .login-box h1 {
+      margin-bottom: 30px;
       font-size: 1.8rem;
     }
 
-    input {
-      display: block;
+    input[type="password"] {
       width: 100%;
-      margin-bottom: 1rem;
-      padding: 0.75rem;
+      padding: 10px;
+      margin-bottom: 20px;
       border: none;
-      border-radius: 8px;
-      background: #2e2e33;
-      color: white;
-    }
-
-    button {
-      background: #00aaff;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
+      border-radius: 10px;
+      background-color: #2e2e33;
+      color: #fff;
       font-size: 1rem;
     }
 
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #00aaff;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
     button:hover {
-      background: #0088cc;
+      background-color: #008ecc;
+    }
+
+    .error {
+      color: #f44;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
+  <div class="login-box">
     <h1>Login to use RO-EXEC</h1>
-    <form id="loginForm">
-      <input type="email" name="email" placeholder="Email" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <input type="text" name="key" placeholder="Enter Key" required />
-      <button type="submit">Login</button>
-    </form>
+    <input type="password" id="keyInput" placeholder="Enter key...">
+    <button onclick="validateKey()">Submit</button>
+    <div id="errorMsg" class="error"></div>
   </div>
+
+  <script>
+    const correctKey = "sH4-2-G43-1-2DXS-F4-2-d3"; // Replace with your actual key
+
+    function validateKey() {
+      const key = document.getElementById("keyInput").value;
+      const errorMsg = document.getElementById("errorMsg");
+
+      if (key === correctKey) {
+        window.location.href = "main.html"; // Replace with your actual target page path
+      } else {
+        errorMsg.textContent = "Invalid key. Please try again.";
+      }
+    }
+  </script>
 </body>
 </html>
