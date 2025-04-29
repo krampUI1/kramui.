@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RO-EXEC</title>
   <style>
-    /* CSS styles remain the same as before */
     body {
       margin: 0;
       background-color: #0f0f10;
@@ -154,7 +153,9 @@
       cursor: pointer;
     }
 
-    .script-menu button:hover { background-color: #444; }
+    .script-menu button:hover {
+      background-color: #444;
+    }
 
     .console {
       margin-top: 20px;
@@ -173,8 +174,6 @@
   </style>
 </head>
 <body>
-  <!-- No redirect script here anymore -->
-
   <div class="sidebar">
     <div class="sidebar-logo">
       <h1>loader.live</h1>
@@ -215,7 +214,7 @@
 
   <script>
     let socket;
-    const wsURL = "wss://magical-delicate-pepperberry.glitch.me";
+    const wsURL = "ws://localhost:8765";
     const statusEl = document.getElementById("status");
     const luaCode = document.getElementById("lua-code");
     const runBtn = document.getElementById("run-btn");
@@ -239,26 +238,34 @@
         log("System", "Already connected.");
         return;
       }
+
       log("System", "Connecting...");
       socket = new WebSocket(wsURL);
+
       socket.onopen = () => {
         log("System", "Connected to WebSocket.");
         statusEl.textContent = "● Connected";
         statusEl.classList.remove("disconnected");
       };
+
       socket.onclose = () => {
         log("System", "Disconnected from WebSocket.");
         statusEl.textContent = "● Disconnected";
         statusEl.classList.add("disconnected");
       };
+
       socket.onerror = () => {
         log("Error", "WebSocket connection failed.", "error");
       };
+
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.source === "roblox") log("Roblox", data.output);
-          else if (data.error) log("Error", data.error, "error");
+          if (data.source === "roblox") {
+            log("Roblox", data.output);
+          } else if (data.error) {
+            log("Error", data.error, "error");
+          }
         } catch {
           log("Error", "Invalid message from server.", "error");
         }
@@ -281,24 +288,35 @@
         log("System", "Disconnecting...");
       }
     });
+
     runBtn.addEventListener("click", () => {
       const code = luaCode.value.trim();
       if (!code) return log("Error", "No code entered.", "error");
       sendScript(code);
     });
+
     clearBtn.addEventListener("click", () => {
       luaCode.value = "";
       log("System", "Code editor cleared.");
     });
+
     scriptBtn.addEventListener("click", () => {
       scriptMenu.style.display = scriptMenu.style.display === "block" ? "none" : "block";
     });
 
     function insertScript(type) {
       let script = "";
-      if (type === "dex") script = `loadstring(game:HttpGet("https://github.com/unified-naming-convention/NamingStandard/blob/main/UNCCheckEnv.lua"))()`;
-      if (type === "esp") script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/zachisfunny/ESP/main/esp.lua"))()`;
-      if (type === "infyield") script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()`;
+      switch (type) {
+        case "dex":
+          script = `loadstring(game:HttpGet("https://github.com/unified-naming-convention/NamingStandard/blob/main/UNCCheckEnv.lua"))()`;
+          break;
+        case "esp":
+          script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/zachisfunny/ESP/main/esp.lua"))()`;
+          break;
+        case "infyield":
+          script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()`;
+          break;
+      }
       luaCode.value = script;
       scriptMenu.style.display = "none";
       log("System", `Inserted script: ${type}`);
