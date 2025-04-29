@@ -3,324 +3,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RO-EXEC</title>
+  <title>Login - RO-EXEC</title>
+  <script type="module">
+    // Firebase setup
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginForm = document.getElementById("loginForm");
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
+        const userKey = loginForm.key.value;
+
+        try {
+          // Authenticate user
+          await signInWithEmailAndPassword(auth, email, password);
+
+          // Validate key
+          const keysRef = collection(db, "keys");
+          const q = query(keysRef, where("value", "==", userKey), where("enabled", "==", true));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            window.location.href = "ro-exec.html";
+          } else {
+            alert("Invalid or disabled key.");
+          }
+        } catch (err) {
+          alert("Login or key failed: " + err.message);
+        }
+      });
+    });
+  </script>
   <style>
     body {
-      margin: 0;
-      background-color: #0f0f10;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #fff;
+      background: #0f0f10;
+      color: white;
+      font-family: Arial, sans-serif;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
+      margin: 0;
     }
 
-    .sidebar {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 60px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #1a1a1d;
-      border-radius: 15px;
-      padding: 10px 0;
-      gap: 20px;
-    }
-
-    .sidebar-logo h1 { font-size: 1rem; margin: 0; }
-    .sidebar-logo p { font-size: 0.6rem; color: #666; margin: 0; }
-
-    .icon-button {
-      width: 30px;
-      height: 30px;
-      background-color: #2e2e33;
-      border-radius: 8px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .icon-button:hover { background-color: #444; }
-    .icon-button svg { width: 16px; height: 16px; fill: #ccc; }
-
-    .tooltip {
-      visibility: hidden;
-      background-color: #333;
-      color: #fff;
+    .login-container {
+      background: #1a1a1d;
+      padding: 2rem;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 10px #000;
       text-align: center;
-      border-radius: 5px;
-      padding: 5px;
-      position: absolute;
-      left: 40px;
-      white-space: nowrap;
-      z-index: 1;
-      font-size: 0.7rem;
     }
 
-    .icon-button:hover .tooltip { visibility: visible; }
-
-    .container {
-      width: 50vw;
-      max-width: 800px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    h1 {
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
     }
 
-    .header { font-size: 2rem; font-weight: bold; }
-    .subheader { color: #888; margin-bottom: 20px; text-align: center; }
-
-    .editor-container {
-      background-color: #1a1a1d;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 20px;
-      position: relative;
+    input {
+      display: block;
       width: 100%;
-    }
-
-    .status {
-      color: #00d26a;
-      margin-bottom: 10px;
-    }
-
-    .status.disconnected { color: #f44; }
-
-    textarea {
-      width: 100%;
-      height: 50vh;
-      background-color: #0f0f10;
-      color: #00d1ff;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
       border: none;
-      resize: none;
-      font-family: monospace;
+      border-radius: 8px;
+      background: #2e2e33;
+      color: white;
+    }
+
+    button {
+      background: #00aaff;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
       font-size: 1rem;
     }
 
-    .buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      background-color: #2e2e33;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .btn:hover { background-color: #444; }
-
-    .top-right {
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      color: #666;
-    }
-
-    .script-menu {
-      display: none;
-      position: absolute;
-      top: 180px;
-      left: 90px;
-      background-color: #1a1a1d;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px;
-      z-index: 10;
-    }
-
-    .script-menu button {
-      display: block;
-      background-color: #2e2e33;
-      color: white;
-      border: none;
-      padding: 8px;
-      margin: 5px 0;
-      width: 120px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .script-menu button:hover {
-      background-color: #444;
-    }
-
-    .console {
-      margin-top: 20px;
-      width: 50vw;
-      max-width: 800px;
-      height: 150px;
-      background-color: #111;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      overflow-y: auto;
-      white-space: pre-wrap;
+    button:hover {
+      background: #0088cc;
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="sidebar-logo">
-      <h1>loader.live</h1>
-      <p>&copy; krampus mask</p>
-    </div>
-    <div class="icon-button"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
-    <div class="icon-button" onclick="window.location.href='https://scriptblox.com/'">
-      <svg viewBox="0 0 24 24"><path d="M18 2H6a2 2 0 00-2 2v16a1 1 0 001.6.8L12 17.33 18.4 20.8A1 1 0 0020 20V4a2 2 0 00-2-2z"/></svg>
-      <div class="tooltip">Script Hub</div>
-    </div>
-    <div class="icon-button" id="scriptBtn"><svg viewBox="0 0 24 24"><path d="M19 16.94V11c0-1.1-.9-2-2-2h-1V7c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v8.94C2.39 17.36 2 18.16 2 19c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3 0-.84-.39-1.64-1-2.06z"/></svg></div>
-    <div class="icon-button"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm4 0h2v-2H7v2zm4 0h6v-2h-6v2zm4 4h2v-2h-2v2zm0-8h2V7h-2v2zM3 17h2v-2H3v2zm0-8h2V7H3v2z"/></svg></div>
+  <div class="login-container">
+    <h1>Login to use RO-EXEC</h1>
+    <form id="loginForm">
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <input type="text" name="key" placeholder="Enter Key" required />
+      <button type="submit">Login</button>
+    </form>
   </div>
-
-  <div id="scriptMenu" class="script-menu">
-    <button onclick="insertScript('dex')">Dex</button>
-    <button onclick="insertScript('esp')">ESP</button>
-    <button onclick="insertScript('infyield')">Infinite Yield</button>
-  </div>
-
-  <div class="container">
-    <div class="header">RO-EXEC</div>
-    <div class="subheader">User interface for RO-EXEC, provided by loader.live.</div>
-    <div class="editor-container">
-      <div id="status" class="status disconnected">● Disconnected</div>
-      <textarea id="lua-code" placeholder="print('Hello world')"></textarea>
-      <div class="buttons">
-        <button class="btn" id="run-btn">Run</button>
-        <button class="btn" id="clear-btn">Clear</button>
-        <button class="btn" id="connect-btn">Connect</button>
-        <button class="btn" id="disconnect-btn">Disconnect</button>
-      </div>
-      <div class="top-right">loader.live</div>
-    </div>
-  </div>
-
-  <div id="console" class="console"></div>
-
-  <script>
-    let socket;
-    const wsURL = "ws://localhost:8765";
-    const statusEl = document.getElementById("status");
-    const luaCode = document.getElementById("lua-code");
-    const runBtn = document.getElementById("run-btn");
-    const clearBtn = document.getElementById("clear-btn");
-    const connectBtn = document.getElementById("connect-btn");
-    const disconnectBtn = document.getElementById("disconnect-btn");
-    const scriptBtn = document.getElementById("scriptBtn");
-    const scriptMenu = document.getElementById("scriptMenu");
-    const consoleEl = document.getElementById("console");
-
-    function log(source, message, type = "log") {
-      const timestamp = new Date().toLocaleTimeString();
-      const entry = `[${timestamp}] [${source}] ${message}`;
-      consoleEl.textContent += entry + "\n";
-      consoleEl.scrollTop = consoleEl.scrollHeight;
-      console[type](entry);
-    }
-
-    function connectWebSocket() {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        log("System", "Already connected.");
-        return;
-      }
-
-      log("System", "Connecting...");
-      socket = new WebSocket(wsURL);
-
-      socket.onopen = () => {
-        log("System", "Connected to WebSocket.");
-        statusEl.textContent = "● Connected";
-        statusEl.classList.remove("disconnected");
-      };
-
-      socket.onclose = () => {
-        log("System", "Disconnected from WebSocket.");
-        statusEl.textContent = "● Disconnected";
-        statusEl.classList.add("disconnected");
-      };
-
-      socket.onerror = () => {
-        log("Error", "WebSocket connection failed.", "error");
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.source === "roblox") {
-            log("Roblox", data.output);
-          } else if (data.error) {
-            log("Error", data.error, "error");
-          }
-        } catch {
-          log("Error", "Invalid message from server.", "error");
-        }
-      };
-    }
-
-    function sendScript(code) {
-      if (!socket || socket.readyState !== WebSocket.OPEN) {
-        log("Error", "WebSocket not connected.", "error");
-        return;
-      }
-      socket.send(JSON.stringify({ type: "web", command: code }));
-      log("System", "Script sent.");
-    }
-
-    connectBtn.addEventListener("click", connectWebSocket);
-    disconnectBtn.addEventListener("click", () => {
-      if (socket) {
-        socket.close();
-        log("System", "Disconnecting...");
-      }
-    });
-
-    runBtn.addEventListener("click", () => {
-      const code = luaCode.value.trim();
-      if (!code) return log("Error", "No code entered.", "error");
-      sendScript(code);
-    });
-
-    clearBtn.addEventListener("click", () => {
-      luaCode.value = "";
-      log("System", "Code editor cleared.");
-    });
-
-    scriptBtn.addEventListener("click", () => {
-      scriptMenu.style.display = scriptMenu.style.display === "block" ? "none" : "block";
-    });
-
-    function insertScript(type) {
-      let script = "";
-      switch (type) {
-        case "dex":
-          script = `loadstring(game:HttpGet("https://github.com/unified-naming-convention/NamingStandard/blob/main/UNCCheckEnv.lua"))()`;
-          break;
-        case "esp":
-          script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/zachisfunny/ESP/main/esp.lua"))()`;
-          break;
-        case "infyield":
-          script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()`;
-          break;
-      }
-      luaCode.value = script;
-      scriptMenu.style.display = "none";
-      log("System", `Inserted script: ${type}`);
-    }
-  </script>
 </body>
 </html>
