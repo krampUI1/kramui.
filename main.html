@@ -172,11 +172,12 @@
   </style>
 </head>
 <body>
-  <!-- Redirect to login if not authenticated -->
   <script>
-    if (localStorage.getItem('access_granted') !== 'true') {
-      window.location.href = 'index.html';
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('access_granted') !== 'true') {
+        window.location.href = 'index.html';
+      }
+    });
   </script>
 
   <div class="sidebar">
@@ -279,11 +280,34 @@
     }
 
     connectBtn.addEventListener("click", connectWebSocket);
-    disconnectBtn.addEventListener("click", () => { if (socket) { socket.close(); log("System", "Disconnecting..."); }});
-    runBtn.addEventListener("click", () => { const code = luaCode.value.trim(); if (!code) return log("Error", "No code entered.", "error"); sendScript(code); });
-    clearBtn.addEventListener("click", () => { luaCode.value = ""; log("System", "Code editor cleared."); });
-    scriptBtn.addEventListener("click", () => { scriptMenu.style.display = scriptMenu.style.display === "block" ? "none" : "block"; });
-    function insertScript(type) { let script = ""; if (type === "dex") script = `loadstring(game:HttpGet("https://github.com/unified-naming-convention/NamingStandard/blob/main/UNCCheckEnv.lua"))()`; if (type === "esp") script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/zachisfunny/ESP/main/esp.lua"))()`; if (type === "infyield") script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()`; luaCode.value = script; scriptMenu.style.display = "none"; log("System", `Inserted script: ${type}`); }
+    disconnectBtn.addEventListener("click", () => {
+      if (socket) {
+        socket.close();
+        log("System", "Disconnecting...");
+      }
+    });
+    runBtn.addEventListener("click", () => {
+      const code = luaCode.value.trim();
+      if (!code) return log("Error", "No code entered.", "error");
+      sendScript(code);
+    });
+    clearBtn.addEventListener("click", () => {
+      luaCode.value = "";
+      log("System", "Code editor cleared.");
+    });
+    scriptBtn.addEventListener("click", () => {
+      scriptMenu.style.display = scriptMenu.style.display === "block" ? "none" : "block";
+    });
+
+    function insertScript(type) {
+      let script = "";
+      if (type === "dex") script = `loadstring(game:HttpGet("https://github.com/unified-naming-convention/NamingStandard/blob/main/UNCCheckEnv.lua"))()`;
+      if (type === "esp") script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/zachisfunny/ESP/main/esp.lua"))()`;
+      if (type === "infyield") script = `loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()`;
+      luaCode.value = script;
+      scriptMenu.style.display = "none";
+      log("System", `Inserted script: ${type}`);
+    }
   </script>
 </body>
 </html>
