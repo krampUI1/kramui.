@@ -245,13 +245,15 @@
         }
 
         function connectToBridge() {
-            socket = new WebSocket('https://e94eb6499aac.ngrok-free.app');
-            socket.onopen = () => addLog("Connected to Aether Bridge.", "success");
+            // Updated to wss:// for Vercel/Ngrok compatibility
+            socket = new WebSocket('wss://e94eb6499aac.ngrok-free.app');
+            
+            socket.onopen = () => addLog("Connected to the server.", "success");
             socket.onclose = () => {
                 addLog("Bridge Connection Lost. Retrying...", "error");
                 setTimeout(connectToBridge, 5000);
             };
-            socket.onerror = () => addLog("WebSocket Error. Ensure server.js is running.", "error");
+            socket.onerror = () => addLog("WebSocket Error. Ensure server.js and Ngrok are running.", "error");
         }
 
         function executeScript() {
@@ -324,7 +326,7 @@
             const validSonic = (user === "sonic" && pass === "sonic123");
             const validToshiro = (user === "toshiro" && pass === "sarah123");
 
-            if (validDev || validSonic) {
+            if (validDev || validSonic || validToshiro) {
                 userEl.classList.remove('text-red-500');
                 passEl.classList.remove('text-red-500');
                 errorEl.classList.add('hidden');
@@ -343,8 +345,6 @@
                     resetToDefault();
                     loadConfigs();
                     connectToBridge(); 
-                    // Changed message to "Connected to the server"
-                    addLog("Connected to the server.", "success");
                 }, 1000);
             } else {
                 userEl.classList.add('text-red-500');
@@ -368,6 +368,3 @@
     </script>
 </body>
 </html>
-
-
-
