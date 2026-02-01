@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AETHER Systems</title>
+    <title>Aether</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap');
@@ -149,6 +149,10 @@
 
         #intro-text { position: absolute; animation: fadeOutBlur 1.6s ease-in-out 1.5s forwards; }
         @keyframes fadeOutBlur { 0% { opacity: 1; filter: blur(0px); } 100% { opacity: 0; filter: blur(20px); visibility: hidden; } }
+        
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        .status-online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
     </style>
 </head>
 <body>
@@ -192,6 +196,34 @@
                     </div>
                 </div>
 
+                <div id="bridgeContainer" class="glass p-5 rounded-xl transition-all duration-300">
+                    <div class="flex justify-between items-center mb-3">
+                        <p class="text-[9px] uppercase text-gray-500 font-bold">Bridge Settings</p>
+                        <button onclick="toggleBridge()" class="text-[8px] text-gray-500 hover:text-white uppercase font-black transition-colors">Hide</button>
+                    </div>
+                    
+                    <div id="bridgeContent" class="space-y-3">
+                        <div>
+                            <label class="text-[8px] uppercase text-gray-400 font-bold block mb-1">WebSocket URL</label>
+                            <input type="text" id="bridgeUrlInput" placeholder="wss://your-link.ngrok-free.app" class="w-full bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-[10px] font-mono focus:outline-none focus:border-blue-500 transition-all">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span id="connDot" class="status-dot status-offline"></span>
+                                <span id="connText" class="text-[9px] font-bold uppercase tracking-widest text-red-500">Offline</span>
+                            </div>
+                            <button onclick="connectToBridge()" class="bg-blue-600/20 border border-blue-500/40 text-blue-400 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all">Connect</button>
+                        </div>
+                    </div>
+
+                    <div id="bridgeHidden" class="hidden flex items-center justify-center py-2 cursor-pointer" onclick="toggleBridge()">
+                        <div class="flex items-center gap-2 text-[9px] font-black text-blue-500 uppercase tracking-widest">
+                            <span id="miniConnDot" class="status-dot status-offline"></span>
+                            Show Bridge Settings
+                        </div>
+                    </div>
+                </div>
+
                 <div class="glass p-5 rounded-xl">
                     <p class="text-[9px] uppercase text-gray-500 font-bold mb-2">Connect Token</p>
                     <p id="tokenDisplay" class="text-xs font-mono font-bold text-blue-400 break-all bg-black/40 p-2 rounded border border-white/5 cursor-pointer" onclick="copyToken()"></p>
@@ -230,9 +262,12 @@
         const editor = document.getElementById('configEditor');
         const configList = document.getElementById('configList');
         const logsBox = document.getElementById('logs');
+        const urlInput = document.getElementById('bridgeUrlInput');
         let socket;
 
-        const defaultConfig = `soon`;
+        const defaultConfig = `-- Aether Initialized\nprint("Hello from Aether")`;
+
+        urlInput.value = localStorage.getItem('aether_last_bridge') || "";
 
         function addLog(msg, type = 'info') {
             const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
@@ -244,32 +279,70 @@
             logsBox.scrollTop = logsBox.scrollHeight;
         }
 
+        // --- NEW HIDE LOGIC ---
+        function toggleBridge() {
+            const content = document.getElementById('bridgeContent');
+            const hidden = document.getElementById('bridgeHidden');
+            const hideBtn = document.querySelector('#bridgeContainer button[onclick="toggleBridge()"]');
+            const title = document.querySelector('#bridgeContainer p');
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                hidden.classList.add('hidden');
+                hideBtn.classList.remove('hidden');
+                title.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+                hidden.classList.remove('hidden');
+                hideBtn.classList.add('hidden');
+                title.classList.add('hidden');
+            }
+        }
+
+        function updateStatus(online) {
+            const dot = document.getElementById('connDot');
+            const miniDot = document.getElementById('miniConnDot');
+            const text = document.getElementById('connText');
+            if (online) {
+                dot.className = miniDot.className = "status-dot status-online";
+                text.innerText = "Connected";
+                text.className = "text-[9px] font-bold uppercase tracking-widest text-green-500";
+            } else {
+                dot.className = miniDot.className = "status-dot status-offline";
+                text.innerText = "Offline";
+                text.className = "text-[9px] font-bold uppercase tracking-widest text-red-500";
+            }
+        }
+
         function connectToBridge() {
-            // Updated to wss:// for Vercel/Ngrok compatibility
-            socket = new WebSocket('wss://e94eb6499aac.ngrok-free.app');
+            const targetUrl = urlInput.value.trim();
+            if (!targetUrl) { addLog("Error: No Bridge URL provided.", "error"); return; }
+            if (socket && socket.readyState === WebSocket.OPEN) socket.close();
             
-            socket.onopen = () => addLog("Connected to the server.", "success");
-            socket.onclose = () => {
-                addLog("Bridge Connection Lost. Retrying...", "error");
-                setTimeout(connectToBridge, 5000);
-            };
-            socket.onerror = () => addLog("WebSocket Error. Ensure server.js and Ngrok are running.", "error");
+            addLog(`Connecting to: ${targetUrl}`, "info");
+            localStorage.setItem('aether_last_bridge', targetUrl);
+            
+            try {
+                socket = new WebSocket(targetUrl);
+                socket.onopen = () => { updateStatus(true); addLog("Connected to the server.", "success"); };
+                socket.onclose = () => { updateStatus(false); addLog("Bridge Connection Closed.", "error"); };
+                socket.onerror = () => { updateStatus(false); addLog("Connection Failed.", "error"); };
+            } catch (e) {
+                addLog("Invalid URL format.", "error");
+            }
         }
 
         function executeScript() {
             if (socket && socket.readyState === WebSocket.OPEN) {
                 addLog("Relaying script to Bridge...", "info");
-                socket.send(JSON.stringify({
-                    type: 'execute',
-                    script: editor.value
-                }));
+                socket.send(JSON.stringify({ type: 'execute', script: editor.value }));
                 addLog("Aether Script Executed Successfully!", "success");
             } else {
                 addLog("Execution failed: Bridge Offline.", "error");
             }
         }
 
-        function resetToDefault() { editor.value = defaultConfig; addLog("Editor reset to default template.", "info"); }
+        function resetToDefault() { editor.value = defaultConfig; addLog("Editor reset.", "info"); }
 
         function saveConfig() {
             const name = document.getElementById('configNameInput').value;
@@ -278,7 +351,7 @@
             configs.push({ name, content: editor.value });
             localStorage.setItem('aether_configs', JSON.stringify(configs));
             document.getElementById('configNameInput').value = '';
-            addLog(`Configuration '${name}' saved to library.`, "success");
+            addLog(`Saved '${name}'.`, "success");
             loadConfigs();
         }
 
@@ -287,7 +360,7 @@
             const configs = JSON.parse(localStorage.getItem('aether_configs') || '[]');
             configs.splice(index, 1);
             localStorage.setItem('aether_configs', JSON.stringify(configs));
-            addLog(`Configuration '${name}' deleted.`, "error");
+            addLog(`Deleted '${name}'.`, "error");
             loadConfigs();
         }
 
@@ -310,60 +383,41 @@
 
         window.openConfig = (i, name) => {
             const configs = JSON.parse(localStorage.getItem('aether_configs'));
-            if(configs[i]) { editor.value = configs[i].content; addLog(`Loaded config: ${name}`, "info"); }
+            if(configs[i]) { editor.value = configs[i].content; addLog(`Loaded: ${name}`, "info"); }
         };
 
         document.getElementById('loginForm').onsubmit = (e) => {
             e.preventDefault();
             const userEl = document.getElementById('usernameInput');
             const passEl = document.getElementById('passwordInput');
-            const errorEl = document.getElementById('loginError');
-
             const user = userEl.value;
             const pass = passEl.value;
 
-            const validDev = (user === "dev" && pass === "killer10ha");
-            const validSonic = (user === "sonic" && pass === "sonic123");
-            const validToshiro = (user === "toshiro" && pass === "sarah123");
+            const valid = (user === "dev" && pass === "killer10ha") || 
+                          (user === "sonic" && pass === "sonic123") || 
+                          (user === "toshiro" && pass === "sarah123");
 
-            if (validDev || validSonic || validToshiro) {
-                userEl.classList.remove('text-red-500');
-                passEl.classList.remove('text-red-500');
-                errorEl.classList.add('hidden');
-                
+            if (valid) {
                 document.getElementById('login-section').classList.add('fade-out-slow');
-
                 setTimeout(() => {
                     document.getElementById('displayUser').innerText = user;
                     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
                     let t = 'ATH-'; for(let i=0; i<12; i++) t += chars.charAt(Math.floor(Math.random() * chars.length));
                     document.getElementById('tokenDisplay').innerText = t;
-                    
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('main-interface').classList.add('fade-in-slow');
                     document.body.style.alignItems = 'flex-start';
                     resetToDefault();
                     loadConfigs();
-                    connectToBridge(); 
                 }, 1000);
             } else {
-                userEl.classList.add('text-red-500');
-                passEl.classList.add('text-red-500');
-                errorEl.classList.remove('hidden');
-                addLog("Unauthorized access attempt.", "error");
+                document.getElementById('loginError').classList.remove('hidden');
             }
         };
 
-        document.querySelectorAll('#loginForm input').forEach(input => {
-            input.addEventListener('input', () => {
-                input.classList.remove('text-red-500');
-                document.getElementById('loginError').classList.add('hidden');
-            });
-        });
-
         function copyToken() { 
             navigator.clipboard.writeText(document.getElementById('tokenDisplay').innerText);
-            addLog("Token copied to clipboard.", "info");
+            addLog("Token copied.", "info");
         }
     </script>
 </body>
