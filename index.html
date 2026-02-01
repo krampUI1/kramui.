@@ -232,17 +232,7 @@
         const logsBox = document.getElementById('logs');
         let socket;
 
-        const defaultConfig = `getgenv().Aether = {
-    ['Silent'] = {
-        Enabled = true,
-        Radius = 150,
-        Hit_Chance = 100,
-        ['Hit Part'] = { Part = "Head", Type = "Custom" },
-        ['Prediction'] = { Enabled = false, Prediction_X = 0.135, Prediction_Y = 0.135 },
-        ['Fov'] = { Visible = true, Color = Color3.fromRGB(255,255,255), Thickness = 1, Outline = true },
-    },
-    ['Visuals'] = { ['Text'] = { Enabled = true, Color = Color3.fromRGB(255,255,255) } },
-}`;
+        const defaultConfig = `soon`;
 
         function addLog(msg, type = 'info') {
             const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
@@ -332,6 +322,7 @@
 
             const validDev = (user === "dev" && pass === "killer10ha");
             const validSonic = (user === "sonic" && pass === "sonic123");
+            const validToshiro = (user === "toshiro" && pass === "sarah123");
 
             if (validDev || validSonic) {
                 userEl.classList.remove('text-red-500');
@@ -377,5 +368,6 @@
     </script>
 </body>
 </html>
+
 
 
