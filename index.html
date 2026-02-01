@@ -9,7 +9,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Fira+Code:wght@400;500&display=swap');
 
         body {
-            /* Restored the dark blue radial gradient */
             background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
             font-family: 'Inter', sans-serif;
             color: white;
@@ -22,8 +21,12 @@
             transition: align-items 1s ease-in-out;
         }
 
+        ::-webkit-scrollbar { width: 4px; height: 4px; background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 10px; }
+
+        /* KRAMUI LOGIN STYLE */
         .login-card {
-            background: #0d0d0d; /* Slightly darker card for contrast */
+            background: #0d0d0d;
             border-radius: 16px;
             padding: 40px;
             width: 100%;
@@ -59,10 +62,6 @@
             box-shadow: 0 0 0 1px #3b82f6;
         }
 
-        .custom-input.text-red-500 {
-            border-color: #ef4444 !important;
-        }
-
         .signin-btn {
             width: 100%;
             background: #ffffff;
@@ -77,17 +76,59 @@
             transition: opacity 0.2s, transform 0.1s;
         }
 
-        .signin-btn:hover { opacity: 0.9; }
-        .signin-btn:active { transform: scale(0.98); }
+        /* DASHBOARD STYLES */
+        .glass {
+            background: rgba(18, 18, 18, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-        /* Main UI Styling */
-        .glass { background: rgba(18, 18, 18, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .fade-in-slow { animation: fadeIn 2s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .editor-container {
+            display: flex;
+            background: rgba(5, 5, 5, 0.95);
+            border-radius: 12px 12px 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #configEditor {
+            flex: 1;
+            padding: 1.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            background: transparent;
+            color: #61afef;
+            border: none;
+            outline: none;
+            resize: none;
+            height: 450px;
+        }
+
+        .logs-container {
+            height: 150px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            padding: 10px;
+            overflow-y: auto;
+            color: #8b949e;
+        }
+
+        .log-entry { margin-bottom: 4px; }
+        .log-time { color: #4b5563; margin-right: 8px; }
+        .log-msg-success { color: #4ade80; }
+        .log-msg-error { color: #f87171; }
+
         .hidden { display: none !important; }
         
         #intro-text { position: absolute; animation: fadeOutBlur 1.6s ease-in-out 1.5s forwards; }
         @keyframes fadeOutBlur { 0% { opacity: 1; filter: blur(0px); } 100% { opacity: 0; filter: blur(20px); visibility: hidden; } }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in-slow { animation: fadeIn 2s ease forwards; }
     </style>
 </head>
 <body>
@@ -122,61 +163,135 @@
     <div id="main-interface" class="hidden w-full max-w-7xl py-8 px-6 self-start">
         <div class="text-center mb-10">
             <h1 class="text-6xl font-black tracking-tighter text-white opacity-90">AETHER</h1>
-            <div class="w-12 h-1 bg-blue-600 mx-auto mt-2"></div>
+            <div class="w-12 h-1 bg-blue-600 mx-auto mt-2 shadow-[0_0_10px_#2563eb]"></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="lg:col-span-1 glass p-4 rounded-xl">
-                <p class="text-[9px] uppercase text-gray-500 font-bold">Session User</p>
-                <p id="displayUser" class="text-sm font-black text-blue-400">Not Logged In</p>
+            <div class="lg:col-span-1 space-y-4">
+                <div class="glass p-4 rounded-xl flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-600/20 border border-blue-500/30 rounded-lg flex items-center justify-center font-black text-blue-500">A</div>
+                    <div>
+                        <p class="text-[9px] uppercase text-gray-500 font-bold">User</p>
+                        <p id="displayUser" class="text-sm font-black">User</p>
+                    </div>
+                </div>
+
+                <div class="glass p-5 rounded-xl">
+                    <p class="text-[9px] uppercase text-gray-500 font-bold mb-2">Connect Token</p>
+                    <p id="tokenDisplay" class="text-xs font-mono font-bold text-blue-400 break-all bg-black/40 p-2 rounded border border-white/5 cursor-pointer" onclick="copyToken()"></p>
+                </div>
+
+                <div class="glass p-5 rounded-xl flex flex-col gap-4">
+                    <p class="text-[9px] uppercase text-gray-500 font-bold">Library</p>
+                    <input type="text" id="searchLibrary" oninput="loadConfigs()" placeholder="Search configs..." class="bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-[10px] focus:outline-none">
+                    <div class="flex gap-2">
+                        <input type="text" id="configNameInput" placeholder="Name..." class="flex-1 bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-xs focus:outline-none">
+                        <button onclick="saveConfig()" class="bg-white text-black px-3 rounded-lg font-bold">+</button>
+                    </div>
+                    <div id="configList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+                </div>
             </div>
-            <div class="lg:col-span-3 glass p-6 rounded-xl flex flex-col gap-4">
-                <textarea id="configEditor" class="w-full h-96 bg-black/30 border-none outline-none font-mono text-blue-200 p-4 rounded-lg" placeholder="-- Paste Script Here"></textarea>
-                <button onclick="executeScript()" class="bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-black uppercase text-xs tracking-widest transition-all">Execute Script</button>
+
+            <div class="lg:col-span-3 flex flex-col gap-0">
+                <div class="flex justify-between items-center px-2 mb-4">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-500">Cloud Config Editor</p>
+                    <div class="flex gap-2">
+                        <button onclick="resetToDefault()" class="text-[9px] border border-white/10 hover:bg-white/5 px-4 py-2 rounded-lg uppercase font-black tracking-widest">Reset</button>
+                        <button onclick="executeScript()" class="text-[9px] bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg uppercase font-black tracking-widest">Execute</button>
+                    </div>
+                </div>
+                <div class="editor-container">
+                    <textarea id="configEditor" spellcheck="false" placeholder="-- Your code here..."></textarea>
+                </div>
+                <div id="logs" class="logs-container">
+                    <div class="log-entry"><span class="log-time">[00:00:00]</span> <span class="log-msg-info">Aether Console Initialized...</span></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const loginForm = document.getElementById('loginForm');
-        const userInp = document.getElementById('usernameInput');
-        const passInp = document.getElementById('passwordInput');
-        const errorMsg = document.getElementById('loginError');
+        const editor = document.getElementById('configEditor');
+        const configList = document.getElementById('configList');
+        const logsBox = document.getElementById('logs');
+        let socket;
 
-        loginForm.onsubmit = (e) => {
+        const defaultConfig = `soon...\n}`;
+
+        function addLog(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            let tClass = type === 'success' ? 'log-msg-success' : (type === 'error' ? 'log-msg-error' : '');
+            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="${tClass}">${msg}</span>`;
+            logsBox.appendChild(entry);
+            logsBox.scrollTop = logsBox.scrollHeight;
+        }
+
+        function connectToBridge() {
+            socket = new WebSocket('ws://localhost:8080');
+            socket.onopen = () => addLog("Connected to Bridge.", "success");
+            socket.onclose = () => addLog("Bridge Connection Lost.", "error");
+        }
+
+        function executeScript() {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: 'execute', script: editor.value }));
+                addLog("Script sent to executor.", "success");
+            } else {
+                addLog("Execution failed: Bridge Offline.", "error");
+            }
+        }
+
+        // LOGIN LOGIC
+        document.getElementById('loginForm').onsubmit = (e) => {
             e.preventDefault();
+            const userInp = document.getElementById('usernameInput');
+            const passInp = document.getElementById('passwordInput');
             const user = userInp.value;
             const pass = passInp.value;
 
-            const isDev = (user === "dev" && pass === "devver");
-            const isSonic = (user === "sonic" && pass === "sonic123");
-
-            if (isDev || isSonic) {
+            if ((user === "dev" && pass === "killer10ha") || (user === "sonic" && pass === "sonic123")) {
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('main-interface').classList.remove('hidden');
                 document.getElementById('main-interface').classList.add('fade-in-slow');
                 document.body.style.alignItems = 'flex-start';
                 document.getElementById('displayUser').innerText = user;
-                // connectToBridge(); // Call your existing websocket function
+                
+                const t = 'ATH-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                document.getElementById('tokenDisplay').innerText = t;
+                
+                editor.value = defaultConfig;
+                loadConfigs();
+                connectToBridge();
             } else {
                 userInp.classList.add('text-red-500');
                 passInp.classList.add('text-red-500');
-                errorMsg.classList.remove('hidden');
+                document.getElementById('loginError').classList.remove('hidden');
             }
         };
 
-        [userInp, passInp].forEach(input => {
-            input.oninput = () => {
-                userInp.classList.remove('text-red-500');
-                passInp.classList.remove('text-red-500');
-                errorMsg.classList.add('hidden');
-            };
-        });
+        // UI Helpers
+        function resetToDefault() { editor.value = defaultConfig; }
+        function copyToken() { navigator.clipboard.writeText(document.getElementById('tokenDisplay').innerText); addLog("Token copied.", "info"); }
 
-        function executeScript() {
-            const script = document.getElementById('configEditor').value;
-            // socket.send(JSON.stringify({type: 'execute', script: script}));
-            console.log("Sent to executor: ", script);
+        // Rest of your Library functions (saveConfig, loadConfigs, etc.)
+        function saveConfig() {
+            const name = document.getElementById('configNameInput').value;
+            if(!name) return;
+            const configs = JSON.parse(localStorage.getItem('aether_configs') || '[]');
+            configs.push({ name, content: editor.value });
+            localStorage.setItem('aether_configs', JSON.stringify(configs));
+            loadConfigs();
+        }
+
+        function loadConfigs() {
+            const configs = JSON.parse(localStorage.getItem('aether_configs') || '[]');
+            configList.innerHTML = configs.map((c, i) => `
+                <div onclick="document.getElementById('configEditor').value = \`${c.content}\`" class="bg-white/5 p-3 rounded-lg cursor-pointer hover:bg-white/10 text-[11px] font-bold">
+                    ${c.name}
+                </div>
+            `).join('');
         }
     </script>
 </body>
