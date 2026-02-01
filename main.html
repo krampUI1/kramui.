@@ -255,7 +255,7 @@
         }
 
         function connectToBridge() {
-            socket = new WebSocket('ws://localhost:8080');
+            socket = new WebSocket('https://d2c4db25f077.ngrok-free.app/');
             socket.onopen = () => addLog("Connected to Aether Bridge.", "success");
             socket.onclose = () => {
                 addLog("Bridge Connection Lost. Retrying...", "error");
@@ -377,3 +377,4 @@
     </script>
 </body>
 </html>
+
