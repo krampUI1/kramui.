@@ -3,423 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aether</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap');
-
-        body {
-            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
-            font-family: 'Inter', sans-serif;
-            color: white;
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            transition: align-items 1s ease-in-out;
-        }
-
-        ::-webkit-scrollbar { width: 4px; height: 4px; background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 10px; }
-
-        .login-card {
-            background: #0d0d0d;
-            border-radius: 16px;
-            padding: 40px;
-            width: 100%;
-            max-width: 420px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        }
-
-        .input-label {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #555;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .custom-input {
-            width: 100%;
-            background: #141414;
-            border: 1px solid #2a2a2a;
-            border-radius: 8px;
-            padding: 14px 16px;
-            color: white;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .custom-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px #3b82f6;
-        }
-
-        .signin-btn {
-            width: 100%;
-            background: #ffffff;
-            color: #000000;
-            font-weight: 800;
-            padding: 14px;
-            border-radius: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 13px;
-            margin-top: 10px;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-
-        .signin-btn:hover { opacity: 0.9; }
-        .signin-btn:active { transform: scale(0.98); }
-
-        .glass {
-            background: rgba(18, 18, 18, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .fade-out-slow {
-            opacity: 0 !important;
-            transform: translateY(-20px);
-            transition: opacity 1.5s ease, transform 1.5s ease;
-            pointer-events: none;
-        }
-
-        .fade-in-slow {
-            display: block !important;
-            animation: fadeIn 2s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .editor-container {
-            display: flex;
-            background: rgba(5, 5, 5, 0.95);
-            border-radius: 12px 12px 0 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        #configEditor {
-            flex: 1;
-            padding: 1.5rem;
-            font-family: 'Fira Code', monospace;
-            font-size: 13px;
-            line-height: 1.5;
-            background: transparent;
-            color: #61afef;
-            border: none;
-            outline: none;
-            resize: none;
-            tab-size: 4;
-            height: 450px;
-        }
-
-        .logs-container {
-            height: 150px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            font-family: 'Fira Code', monospace;
-            font-size: 11px;
-            padding: 10px;
-            overflow-y: auto;
-            color: #8b949e;
-        }
-
-        .log-entry { margin-bottom: 4px; animation: logSlide 0.3s ease-out; }
-        .log-time { color: #4b5563; margin-right: 8px; }
-        .log-msg-success { color: #4ade80; }
-        .log-msg-error { color: #f87171; }
-        .log-msg-info { color: #60a5fa; }
-
-        @keyframes logSlide {
-            from { opacity: 0; transform: translateX(-5px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        #intro-text { position: absolute; animation: fadeOutBlur 1.6s ease-in-out 1.5s forwards; }
-        @keyframes fadeOutBlur { 0% { opacity: 1; filter: blur(0px); } 100% { opacity: 0; filter: blur(20px); visibility: hidden; } }
-        
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .status-offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
-        .status-online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-    </style>
+    <title>Aether Cheats - Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="intro-text" class="z-[100] text-center w-full bg-black inset-0 flex items-center justify-center absolute">
-        <h1 class="text-8xl md:text-[10rem] font-black uppercase tracking-tighter text-[#d1d1d1]">AETHER</h1>
-    </div>
-
-    <div id="login-section" class="z-10 login-card opacity-0" style="animation: fadeIn 1s ease-out 3s forwards; transition: opacity 1s, transform 1s;">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-black mb-2 text-white">Welcome back</h1>
-            <p class="text-gray-500 text-sm font-semibold">Enter your credentials to continue.</p>
-        </div>
-        <form id="loginForm">
-            <div class="mb-5">
-                <label class="input-label">Username</label>
-                <input type="text" id="usernameInput" required placeholder="Username" class="custom-input">
-            </div>
-            <div class="mb-6">
-                <label class="input-label">Password</label>
-                <input type="password" id="passwordInput" required placeholder="••••••••" class="custom-input">
-            </div>
-            <div id="loginError" class="text-red-500 text-[10px] font-bold text-center mb-4 hidden uppercase tracking-widest">Username or password is incorrect</div>
-            <button type="submit" class="signin-btn">Sign In</button>
-        </form>
-    </div>
-
-    <div id="main-interface" class="hidden w-full max-w-7xl py-8 px-6 self-start opacity-0">
-        <div class="text-center mb-10">
-            <h1 class="text-6xl font-black tracking-tighter text-white opacity-90">AETHER</h1>
-            <div class="w-12 h-1 bg-blue-600 mx-auto mt-2 shadow-[0_0_10px_#2563eb]"></div>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Aether Cheats</h1>
+            <p class="subtitle">Admin Control Panel</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="lg:col-span-1 space-y-4">
-                <div class="glass p-4 rounded-xl flex items-center gap-4">
-                    <div class="w-10 h-10 bg-blue-600/20 border border-blue-500/30 rounded-lg flex items-center justify-center font-black text-blue-500">A</div>
-                    <div>
-                        <p class="text-[9px] uppercase text-gray-500 font-bold">User</p>
-                        <p id="displayUser" class="text-sm font-black">User</p>
-                    </div>
-                </div>
-
-                <div id="bridgeContainer" class="glass p-5 rounded-xl transition-all duration-300">
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-[9px] uppercase text-gray-500 font-bold">Bridge Settings</p>
-                        <button onclick="toggleBridge()" class="text-[8px] text-gray-500 hover:text-white uppercase font-black transition-colors">Hide</button>
-                    </div>
-                    
-                    <div id="bridgeContent" class="space-y-3">
-                        <div>
-                            <label class="text-[8px] uppercase text-gray-400 font-bold block mb-1">WebSocket URL</label>
-                            <input type="text" id="bridgeUrlInput" placeholder="wss://your-link.ngrok-free.app" class="w-full bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-[10px] font-mono focus:outline-none focus:border-blue-500 transition-all">
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <span id="connDot" class="status-dot status-offline"></span>
-                                <span id="connText" class="text-[9px] font-bold uppercase tracking-widest text-red-500">Offline</span>
-                            </div>
-                            <button onclick="connectToBridge()" class="bg-blue-600/20 border border-blue-500/40 text-blue-400 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all">Connect</button>
-                        </div>
-                    </div>
-
-                    <div id="bridgeHidden" class="hidden flex items-center justify-center py-2 cursor-pointer" onclick="toggleBridge()">
-                        <div class="flex items-center gap-2 text-[9px] font-black text-blue-500 uppercase tracking-widest">
-                            <span id="miniConnDot" class="status-dot status-offline"></span>
-                            Show Bridge Settings
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass p-5 rounded-xl">
-                    <p class="text-[9px] uppercase text-gray-500 font-bold mb-2">Connect Token</p>
-                    <p id="tokenDisplay" class="text-xs font-mono font-bold text-blue-400 break-all bg-black/40 p-2 rounded border border-white/5 cursor-pointer" onclick="copyToken()"></p>
-                </div>
-
-                <div class="glass p-5 rounded-xl flex flex-col gap-4">
-                    <p class="text-[9px] uppercase text-gray-500 font-bold">Library</p>
-                    <input type="text" id="searchLibrary" oninput="loadConfigs()" placeholder="Search configs..." class="bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-[10px] focus:outline-none">
-                    <div class="flex gap-2">
-                        <input type="text" id="configNameInput" placeholder="Name..." class="flex-1 bg-black/40 border border-white/10 rounded-lg py-2 px-3 text-xs focus:outline-none">
-                        <button onclick="saveConfig()" class="bg-white text-black px-3 rounded-lg font-bold hover:bg-gray-200 transition-colors">+</button>
-                    </div>
-                    <div id="configList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-                </div>
+        <div class="card">
+            <div class="card-header">
+                <h2>🔒 Killswitch Control</h2>
             </div>
-
-            <div class="lg:col-span-3 flex flex-col gap-0">
-                <div class="flex justify-between items-center px-2 mb-4">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-500">Cloud Config Editor</p>
-                    <div class="flex gap-2">
-                        <button onclick="resetToDefault()" class="text-[9px] border border-white/10 hover:bg-white/5 px-4 py-2 rounded-lg uppercase font-black tracking-widest transition-all">Reset</button>
-                        <button onclick="executeScript()" class="text-[9px] bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg uppercase font-black tracking-widest active:scale-95 transition-all">Execute</button>
+            <div class="card-body">
+                <div class="status-display">
+                    <div class="status-label">Current Status:</div>
+                    <div class="status-value" id="statusDisplay">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span id="statusText">Loading...</span>
                     </div>
                 </div>
-                <div class="editor-container">
-                    <textarea id="configEditor" spellcheck="false" placeholder="-- Your code here..."></textarea>
+
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="enableCheat()">
+                        ✓ Enable Cheat
+                    </button>
+                    <button class="btn btn-danger" onclick="disableCheat()">
+                        ✕ Disable Cheat (Killswitch)
+                    </button>
                 </div>
-                <div id="logs" class="logs-container">
-                    <div class="log-entry"><span class="log-time">[00:00:00]</span> <span class="log-msg-info">Aether Console Initialized...</span></div>
+
+                <div class="info-box">
+                    <p><strong>Note:</strong> Changes take effect immediately for all users.</p>
+                    <p>Users will see "Service Unavailable" message when killswitch is active.</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        const editor = document.getElementById('configEditor');
-        const configList = document.getElementById('configList');
-        const logsBox = document.getElementById('logs');
-        const urlInput = document.getElementById('bridgeUrlInput');
-        let socket;
-
-        const defaultConfig = `-- Aether Initialized\nprint("Hello from Aether")`;
-
-        urlInput.value = localStorage.getItem('aether_last_bridge') || "";
-
-        function addLog(msg, type = 'info') {
-            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            let typeClass = type === 'success' ? 'log-msg-success' : (type === 'error' ? 'log-msg-error' : 'log-msg-info');
-            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="${typeClass}">${msg}</span>`;
-            logsBox.appendChild(entry);
-            logsBox.scrollTop = logsBox.scrollHeight;
-        }
-
-        // --- NEW HIDE LOGIC ---
-        function toggleBridge() {
-            const content = document.getElementById('bridgeContent');
-            const hidden = document.getElementById('bridgeHidden');
-            const hideBtn = document.querySelector('#bridgeContainer button[onclick="toggleBridge()"]');
-            const title = document.querySelector('#bridgeContainer p');
-
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                hidden.classList.add('hidden');
-                hideBtn.classList.remove('hidden');
-                title.classList.remove('hidden');
-            } else {
-                content.classList.add('hidden');
-                hidden.classList.remove('hidden');
-                hideBtn.classList.add('hidden');
-                title.classList.add('hidden');
-            }
-        }
-
-        function updateStatus(online) {
-            const dot = document.getElementById('connDot');
-            const miniDot = document.getElementById('miniConnDot');
-            const text = document.getElementById('connText');
-            if (online) {
-                dot.className = miniDot.className = "status-dot status-online";
-                text.innerText = "Connected";
-                text.className = "text-[9px] font-bold uppercase tracking-widest text-green-500";
-            } else {
-                dot.className = miniDot.className = "status-dot status-offline";
-                text.innerText = "Offline";
-                text.className = "text-[9px] font-bold uppercase tracking-widest text-red-500";
-            }
-        }
-
-        function connectToBridge() {
-            const targetUrl = urlInput.value.trim();
-            if (!targetUrl) { addLog("Error: No Bridge URL provided.", "error"); return; }
-            if (socket && socket.readyState === WebSocket.OPEN) socket.close();
-            
-            addLog(`Connecting to: ${targetUrl}`, "info");
-            localStorage.setItem('aether_last_bridge', targetUrl);
-            
-            try {
-                socket = new WebSocket(targetUrl);
-                socket.onopen = () => { updateStatus(true); addLog("Connected to the server.", "success"); };
-                socket.onclose = () => { updateStatus(false); addLog("Bridge Connection Closed.", "error"); };
-                socket.onerror = () => { updateStatus(false); addLog("Connection Failed.", "error"); };
-            } catch (e) {
-                addLog("Invalid URL format.", "error");
-            }
-        }
-
-        function executeScript() {
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                addLog("Relaying script to Bridge...", "info");
-                socket.send(JSON.stringify({ type: 'execute', script: editor.value }));
-                addLog("Aether Script Executed Successfully!", "success");
-            } else {
-                addLog("Execution failed: Bridge Offline.", "error");
-            }
-        }
-
-        function resetToDefault() { editor.value = defaultConfig; addLog("Editor reset.", "info"); }
-
-        function saveConfig() {
-            const name = document.getElementById('configNameInput').value;
-            if(!name || !editor.value) return;
-            const configs = JSON.parse(localStorage.getItem('aether_configs') || '[]');
-            configs.push({ name, content: editor.value });
-            localStorage.setItem('aether_configs', JSON.stringify(configs));
-            document.getElementById('configNameInput').value = '';
-            addLog(`Saved '${name}'.`, "success");
-            loadConfigs();
-        }
-
-        function deleteConfig(e, index, name) {
-            e.stopPropagation();
-            const configs = JSON.parse(localStorage.getItem('aether_configs') || '[]');
-            configs.splice(index, 1);
-            localStorage.setItem('aether_configs', JSON.stringify(configs));
-            addLog(`Deleted '${name}'.`, "error");
-            loadConfigs();
-        }
-
-        function loadConfigs() {
-            const searchTerm = document.getElementById('searchLibrary').value.toLowerCase();
-            const configs = JSON.parse(localStorage.getItem('aether_configs') || '[]');
-            configList.innerHTML = configs
-                .map((c, i) => ({...c, originalIndex: i}))
-                .filter(c => c.name.toLowerCase().includes(searchTerm))
-                .map((c) => `
-                <div onclick="openConfig(${c.originalIndex}, '${c.name}')" class="bg-white/5 p-3 rounded-lg cursor-pointer hover:bg-white/10 transition-all font-bold text-[11px] flex justify-between items-center group">
-                    <span class="truncate pr-2">${c.name}</span>
-                    <div class="flex items-center gap-2">
-                        <span class="text-blue-500 opacity-0 group-hover:opacity-100 uppercase text-[9px]">Load</span>
-                        <button onclick="deleteConfig(event, ${c.originalIndex}, '${c.name}')" class="text-red-500 opacity-0 group-hover:opacity-100 hover:text-red-400 font-black px-1">×</button>
+        <div class="card">
+            <div class="card-header">
+                <h2>📊 Statistics</h2>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Status Checks (Today)</div>
+                        <div class="stat-value" id="checksToday">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Last Status Change</div>
+                        <div class="stat-value" id="lastChange">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Uptime</div>
+                        <div class="stat-value" id="uptime">-</div>
                     </div>
                 </div>
-            `).join('');
-        }
+            </div>
+        </div>
 
-        window.openConfig = (i, name) => {
-            const configs = JSON.parse(localStorage.getItem('aether_configs'));
-            if(configs[i]) { editor.value = configs[i].content; addLog(`Loaded: ${name}`, "info"); }
-        };
+        <div class="card">
+            <div class="card-header">
+                <h2>📝 Activity Log</h2>
+            </div>
+            <div class="card-body">
+                <div class="log-container" id="activityLog">
+                    <div class="log-entry">
+                        <span class="log-time">[Loading...]</span>
+                        <span class="log-message">Fetching activity log...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        document.getElementById('loginForm').onsubmit = (e) => {
-            e.preventDefault();
-            const userEl = document.getElementById('usernameInput');
-            const passEl = document.getElementById('passwordInput');
-            const user = userEl.value;
-            const pass = passEl.value;
+        <div class="footer">
+            <p>Aether Cheats © 2024 | Secure Admin Panel</p>
+        </div>
+    </div>
 
-            const valid = (user === "dev" && pass === "killer10ha") || 
-                          (user === "sonic" && pass === "sonic123") || 
-                          (user === "moon" && pass === "moon123");
+    <div class="toast" id="toast"></div>
 
-            if (valid) {
-                document.getElementById('login-section').classList.add('fade-out-slow');
-                setTimeout(() => {
-                    document.getElementById('displayUser').innerText = user;
-                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                    let t = 'ATH-'; for(let i=0; i<12; i++) t += chars.charAt(Math.floor(Math.random() * chars.length));
-                    document.getElementById('tokenDisplay').innerText = t;
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('main-interface').classList.add('fade-in-slow');
-                    document.body.style.alignItems = 'flex-start';
-                    resetToDefault();
-                    loadConfigs();
-                }, 1000);
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
-        };
-
-        function copyToken() { 
-            navigator.clipboard.writeText(document.getElementById('tokenDisplay').innerText);
-            addLog("Token copied.", "info");
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
-
